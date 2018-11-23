@@ -2,8 +2,50 @@
 
 uint32_t SysTickCNT=0;
 
+
+code STCPIN PIN_MAP[]={
+        {PORT2,7},{PORT2,6},{PORT2,5},{PORT2,4},{PORT2,3},{PORT2,0},{PORT2,1},{PORT2,2},
+        {PORT3,6},{PORT3,7},{PORT3,5},{PORT3,4},{PORT3,3},{PORT3,2},
+        {PORT1,7},{PORT1,6},{PORT1,5},{PORT1,4},{PORT1,3},{PORT1,2},{PORT1,1},{PORT1,0},
+        {PORT0,0},{PORT0,1},{PORT0,2},{PORT0,3},{PORT0,4},{PORT0,5},{PORT0,6},{PORT0,7}
+};
+
+void WritePort(PORT_TypeDef PORT,uint8_t dat)
+{
+    if(PORT == PORT0)P0 = dat;
+    else if(PORT == PORT1)P1 = dat;
+    else if(PORT == PORT2)P2 = dat;
+    else if(PORT == PORT3)P3 = dat;
+}
+
+void SetSinglePin(PORT_TypeDef PORT,uint8_t Pin)
+{
+    if(PORT == PORT0)P0 |= 0X01<<Pin;
+    else if(PORT == PORT1)P1 |= 0X01<<Pin;
+    else if(PORT == PORT2)P2 |= 0X01<<Pin;
+    else if(PORT == PORT3)P3 |= 0X01<<Pin;
+}
+
+void ResetSinglePin(PORT_TypeDef PORT,uint8_t Pin)
+{
+    if(PORT == PORT0)P0 &= ~(0X01<<Pin);
+    else if(PORT == PORT1)P1 &=  ~(0X01<<Pin);
+    else if(PORT == PORT2)P2 &=  ~(0X01<<Pin);
+    else if(PORT == PORT3)P3 &=  ~(0X01<<Pin);
+}
+
+void SetPin(uint8_t num)
+{
+    SetSinglePin(PIN_MAP[num].PORT,PIN_MAP[num].PIN);
+}
+
+void ResetPin(uint8_t num)
+{
+    ResetSinglePin(PIN_MAP[num].PORT,PIN_MAP[num].PIN);
+}
+
 //可自定义定时时间
-void Time0Init(uint32_t us)		    
+void Time0Init(uint32_t us)
 {
 	TMOD &= 0xF0;		//设置定时器模式
 	TMOD |= 0x01;		//设置定时器模式
@@ -15,7 +57,7 @@ void Time0Init(uint32_t us)
 }
 
 //定时器2定时1ms初始化，产生系统时钟
-void Time2Init()		
+void Time2Init()
 {
 	T2MOD = 0;		//初始化模式寄存器
 	T2CON = 0;		//初始化控制寄存器
@@ -81,7 +123,7 @@ void SendString(unsigned char *str)
 char putchar(char c)
 {
     ES=0;           //关串口中断
-    SBUF=c;           
+    SBUF=c;
     while(TI!=1);   //等待发送成功
     TI=0;           //清除发送中断标志
     ES=1;           //开串口中断
